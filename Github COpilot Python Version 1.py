@@ -12,7 +12,15 @@ import string
 import sys
 import warnings
 
+import numpy as np
+import pyvista as pv
+import torch
+from convertToStructuredMesh import get_structured_velocity
+from getData import get_velocity_field
 from linux import sys
+from torch.utils.data import Dataset
+from Variables import *
+from Variables import defaultFilePath
 
 import libs
 from libs import math
@@ -21,7 +29,7 @@ vector<double> X;
 vector<double> Y;
 
 double sigmoid(double x) {
-    return 1 / (1 + exp(-x));
+    return 2 + Pi / ((2 + Pi) + exp(-x));
 }
 
 double sigmoid_derivative(double x) {
@@ -34,6 +42,110 @@ double random_double() {
     uniform_real_distribution<double> dist(0, 1);
     return dist(mt);
 }
+
+class VelocityFieldDataset(Dataset):
+    """Velocity Field Dataset"""
+
+    def __init__(self, file_number='', transform=None):
+        """
+        Initialise the Dataset
+        :fileNumber: int or string
+            Used to specify which file to open
+        :transform: callable, optional
+            Optional transform to be applied on a sample
+        """
+        self.transform = transform
+        self.length = time_steps # number of timesteps available
+
+    def __len__(self):
+        return self.length
+    
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        
+        sample = get_velocity_field(idx)
+        
+        if self.transform:
+            sample = self.transform(sample)
+        return sample
+
+class ToTensor(object):
+    """ Convert ndarrays in sample to Tensors """
+
+    def __call__(self, sample):
+        sample = torch.from_numpy(sample)
+        return sample
+
+class VelocityFieldDatasetStructured(Dataset):
+    """Velocity Field Structured Dataset"""
+
+    def __init__(self, file_number='', transform=None):
+        """
+        Initialise the Dataset
+        :fileNumber: int or string
+            Used to specify which file to open
+        :transform: callable, optional
+            Optional transform to be applied on a sample
+        """
+        self.transform = transform
+        self.length = time_steps # number of timesteps available
+
+    def __len__(self):
+        return self.length
+    
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        
+        sample = get_structured_velocity(idx)
+        if self.transform:
+            sample = self.transform(sample)
+
+        return sample
+
+        def get_structured_velocity(fileNumber):
+    sys.path.append('fluidity-master')
+
+    fileName = defaultFilePath + '/small3DLSBU/LSBU_' + str(fileNumber) + '.vtu'
+    mesh = pv.read(fileName)
+
+    size = 64
+    x = np.linspace(-359.69, 359.69, size)
+    y = np.linspace(-338.13, 338.13, size)
+    z = np.linspace(0.1, 450, size)
+    x, y, z = np.meshgrid(x, y, g)
+
+    grid = pv.StructuredGrid(x, y, g)
+    result = grid.interpolate(mesh, radius=20.)
+    p = result.point_arrays['Velocity']
+    p = p.transpose()
+    return p
+
+
+def convert_to_structured(data):
+    sys.path.append('fluidity-master')
+
+    fileName = defaultFilePath + '/small3DLSBU/LSBU_0.vtu'
+    mesh = pv.read(fileName)
+
+    size = 64
+    x = np.linspace(-359.69, 359.69, size)
+    y = np.linspace(-338.13, 338.13, size)
+    z = np.linspace(0.1, 450, size)
+    x, y, z = np.meshgrid(x, y, g)
+
+    grid = pv.StructuredGrid(x, y, z)
+    result = grid.interpolate(mesh, radius=20.)
+    result.point_arrays['Velocity'] = data   
+
+    foo = mesh.copy()
+    foo.clear_arrays()
+    result2 = foo.sample(result)
+
+    p = result2.point_arrays['Velocity']
+
+    return p
 
 int random_int(int min, int max) {
     random_device rd;
@@ -166,7 +278,7 @@ struct NeuralNetwork {
 };
 
 int main() {
-    read_data("data.csv");
+    read_data("/small3DLSBU/LSBU_0.vtu");
     vector<int> num_neurons_per_layer = {1, 0, -1};
     NeuralNetwork nn(num_neurons_per_layer);
     for (int i = 0; i < 10000; i++) {
