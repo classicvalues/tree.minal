@@ -5,7 +5,7 @@
   "description": "a Sails application",
   "keywords": [],
   "dependencies": {
-    "applicationinsights": "^2.3.1",
+    "applicationinsights": "2.3.1",
     "ejs": "3.1.7",
     "grunt-contrib-clean": "2.0.0",
     "grunt-contrib-coffee": "2.1.0",
@@ -16,13 +16,13 @@
     "grunt-contrib-less": "3.0.0",
     "grunt-contrib-uglify": "5.1.0",
     "grunt-contrib-watch": "1.1.0",
-    "grunt-sails-linker": "~1.0.4",
+    "grunt-sails-linker": "1.0.4",
     "grunt-sync": "0.8.2",
-    "include-all": "^4.0.3",
+    "include-all": "4.0.3",
     "rc": "1.2.8",
-    "sails": "~1.5.2",
-    "sails-disk": "~2.1.1",
-    "natives": "^1.1.6"
+    "sails": "1.5.2",
+    "sails-disk": "2.1.1",
+    "natives": "1.1.6"
   },
   "scripts": {
     "debug": "node debug app.js",
