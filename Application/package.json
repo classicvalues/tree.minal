@@ -6,8 +6,7 @@
   "keywords": [],
   "dependencies": {
     "applicationinsights": "^2.3.1",
-    "ejs": "3.1.6",
-    "grunt": "1.5.3",
+    "ejs": "3.1.7",
     "grunt-contrib-clean": "2.0.0",
     "grunt-contrib-coffee": "2.1.0",
     "grunt-contrib-concat": "2.1.0",
